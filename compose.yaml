@@ -14,16 +14,3 @@ services:
       retries: 5
     extra_hosts:
       - host.docker.internal:host-gateway
-  migrator:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: builder
-    command: ["node", "./migrate.mjs"]
-    env_file:
-      - path: ./.env
-        required: true
-    depends_on:
-      back_end:
-        condition: service_healthy
-    restart: "no"

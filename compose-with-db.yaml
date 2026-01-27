@@ -26,16 +26,3 @@ services:
     depends_on:
       db:
         condition: service_healthy
-  migrator:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-      target: builder
-    command: ["node", "./migrate.mjs"]
-    env_file:
-      - path: ./.env
-        required: true
-    depends_on:
-      back_end:
-        condition: service_healthy
-    restart: "no"

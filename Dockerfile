@@ -12,6 +12,7 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 RUN npm run build
+RUN npm run migrate:build
 
 FROM base AS installer
 WORKDIR /app
@@ -19,15 +20,6 @@ WORKDIR /app
 COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 ENV NODE_ENV=production
 RUN pnpm install --frozen-lockfile --prod
-
-FROM base AS migrator
-WORKDIR /app
-
-COPY --from=builder /app/node_modules ./node_modules
-COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-COPY ./tsconfig.json ./
-COPY ./migrate.mjs ./
-COPY ./migrations/ ./migrations/
 
 FROM base AS runner
 WORKDIR /app
@@ -38,11 +30,12 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
 COPY --from=installer --chown=nestjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/migrations ./migrations
+COPY --from=builder --chown=nestjs:nodejs /app/dist ./
 
 USER nestjs
 
 ENV PORT=8080
 EXPOSE ${PORT}
 
-CMD ["node", "dist/main"]
+CMD ["sh", "-c", "node ./migrate.mjs && node ./main.js"]
