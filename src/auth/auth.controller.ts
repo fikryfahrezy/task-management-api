@@ -1,7 +1,17 @@
-import { Body, Controller, HttpCode, Post, Res } from "@nestjs/common";
-import { ApiBody, ApiTags } from "@nestjs/swagger";
-import type { Response } from "express";
-import { LoginDto } from "./dto/login.dto";
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  UnauthorizedException,
+} from "@nestjs/common";
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from "@nestjs/swagger";
+import { LoginReqDto, LoginResDto } from "./dto/login.dto";
 import { AuthService } from "./auth.service";
 
 @ApiTags("auth")
@@ -11,21 +21,10 @@ export class AuthController {
 
   @Post()
   @HttpCode(200)
-  @ApiBody({ type: LoginDto })
-  login(
-    @Body() loginDto: LoginDto,
-    @Res({ passthrough: true }) res: Response,
-  ): { token?: string; message?: string } {
-    const isValid = this.authService.validate(
-      loginDto.email,
-      loginDto.password,
-    );
-
-    if (!isValid) {
-      res.status(401);
-      return { message: "Invalid credentials" };
-    }
-
-    return { token: this.authService.getToken() };
+  @ApiBody({ type: LoginReqDto })
+  @ApiOkResponse({ type: LoginResDto })
+  @ApiUnauthorizedResponse({ type: UnauthorizedException })
+  login(@Body() loginDto: LoginReqDto): LoginResDto {
+    return this.authService.login(loginDto);
   }
 }

@@ -1,5 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "../config/config.service";
+import { LoginReqDto, LoginResDto } from "./dto/login.dto";
 
 const HARD_CODED_EMAIL = "admin@example.com";
 const HARD_CODED_PASSWORD = "password123";
@@ -14,5 +15,12 @@ export class AuthService {
 
   getToken(): string {
     return this.configService.env.AUTH_TOKEN;
+  }
+
+  login(loginReqDto: LoginReqDto): LoginResDto {
+    if (!this.validate(loginReqDto.email, loginReqDto.password)) {
+      throw new UnauthorizedException("Invalid credentials");
+    }
+    return new LoginResDto({ token: this.getToken() });
   }
 }

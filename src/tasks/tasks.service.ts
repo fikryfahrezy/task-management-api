@@ -3,133 +3,75 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { DatabaseService } from "../core/database.service";
 import { CreateTaskDto } from "./dto/create-task.dto";
 import { UpdateTaskDto } from "./dto/update-task.dto";
-import { Task, TaskStatus } from "./task.types";
-
-type TaskListResponse = {
-  data: Task[];
-  meta: { page: number; limit: number; total: number };
-};
+import { TasksRepository } from "./tasks.repository";
+import { TaskStatus } from "./task.types";
+import { TaskListResDto, TaskResDto } from "./dto/list-tasks.dto";
 
 @Injectable()
 export class TasksService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly tasksRepository: TasksRepository) {}
 
-  async listTasks(page: number, limit: number): Promise<TaskListResponse> {
+  async listTasks(page: number, limit: number): Promise<TaskListResDto> {
     const offset = (page - 1) * limit;
-    const [{ total }] = await this.databaseService.sql<
-      { total: number }[]
-    >`SELECT COUNT(*)::int AS total FROM tasks WHERE deleted_at IS NULL`;
+    const [tasks, total] = await this.tasksRepository.listTasks(limit, offset);
 
-    const tasks = await this.databaseService.sql<Task[]>`
-      SELECT id, title, description, status, user_id
-      FROM tasks
-      WHERE deleted_at IS NULL
-      ORDER BY id DESC
-      LIMIT ${limit} OFFSET ${offset}
-    `;
-
-    return {
-      data: tasks,
+    const taskDtos = tasks.map((task) => new TaskResDto(task));
+    return new TaskListResDto({
+      data: taskDtos,
       meta: { page, limit, total },
-    };
+    });
   }
 
-  async getTask(id: number): Promise<Task> {
-    const tasks = await this.databaseService.sql<Task[]>`
-      SELECT id, title, description, status, user_id
-      FROM tasks
-      WHERE id = ${id} AND deleted_at IS NULL
-    `;
-
-    const task = tasks[0];
+  async getTask(id: number): Promise<TaskResDto> {
+    const task = await this.tasksRepository.getTaskById(id);
     if (!task) {
       throw new NotFoundException("Task not found");
     }
 
-    return task;
+    return new TaskResDto(task);
   }
 
-  async createTask(createDto: CreateTaskDto): Promise<Task> {
+  async createTask(createDto: CreateTaskDto): Promise<TaskResDto> {
     const status = (createDto.status ?? "pending") as TaskStatus;
+    const createdTask = await this.tasksRepository.createTask({
+      ...createDto,
+      description: createDto.description ?? null,
+      status: status,
+    });
 
-    const tasks = await this.databaseService.sql<Task[]>`
-      INSERT INTO tasks (title, description, status, user_id)
-      VALUES (${createDto.title}, ${createDto.description ?? null}, ${status}, ${createDto.user_id})
-      RETURNING id, title, description, status, user_id
-    `;
-
-    return tasks[0];
+    return new TaskResDto(createdTask);
   }
 
-  async updateTask(id: number, updateDto: UpdateTaskDto): Promise<Task> {
-    const fields: { key: string; value: unknown }[] = [];
-
-    if (typeof updateDto.title !== "undefined") {
-      fields.push({ key: "title", value: updateDto.title });
-    }
-
-    if (typeof updateDto.description !== "undefined") {
-      fields.push({ key: "description", value: updateDto.description });
-    }
-
-    if (typeof updateDto.status !== "undefined") {
-      fields.push({ key: "status", value: updateDto.status });
-    }
-
-    if (typeof updateDto.user_id !== "undefined") {
-      fields.push({ key: "user_id", value: updateDto.user_id });
-    }
-
-    if (fields.length === 0) {
+  async updateTask(id: number, updateDto: UpdateTaskDto): Promise<TaskResDto> {
+    if (Object.keys(updateDto).length === 0) {
       throw new BadRequestException("No fields to update");
     }
 
-    const tasks = await this.databaseService.sql<Task[]>`
-      SELECT id FROM tasks WHERE id = ${id} AND deleted_at IS NULL
-    `;
-
-    if (!tasks[0]) {
+    const existing = await this.tasksRepository.getTaskById(id);
+    if (!existing) {
       throw new NotFoundException("Task not found");
     }
 
-    const updates: string[] = [];
-    const values: unknown[] = [];
+    const status = (updateDto.status ?? "pending") as TaskStatus;
+    const updatedTask = await this.tasksRepository.updateTask(id, {
+      ...updateDto,
+      description: updateDto.description ?? null,
+      status: status,
+    });
 
-    for (const field of fields) {
-      updates.push(`${field.key} = $${values.length + 1}`);
-      values.push(field.value);
-    }
-
-    values.push(id);
-    const updated = await this.databaseService.sql.unsafe<Task[]>(
-      `UPDATE tasks
-       SET ${updates.join(", ")}, updated_at = NOW()
-       WHERE id = $${values.length}
-       RETURNING id, title, description, status, user_id`,
-      values as unknown as Array<string | number | boolean | null>,
-    );
-
-    return updated[0];
+    return new TaskResDto(updatedTask);
   }
 
-  async deleteTask(id: number): Promise<{ message: string }> {
-    const tasks = await this.databaseService.sql<Task[]>`
-      SELECT id FROM tasks WHERE id = ${id} AND deleted_at IS NULL
-    `;
-
-    if (!tasks[0]) {
+  async deleteTask(id: number): Promise<TaskResDto> {
+    const existing = await this.tasksRepository.getTaskById(id);
+    if (!existing) {
       throw new NotFoundException("Task not found");
     }
 
-    await this.databaseService.sql`
-      UPDATE tasks
-      SET deleted_at = NOW(), updated_at = NOW()
-      WHERE id = ${id}
-    `;
+    await this.tasksRepository.softDeleteTask(id);
 
-    return { message: "Task deleted" };
+    return new TaskResDto(existing);
   }
 }
