@@ -22,17 +22,14 @@ shift({
   sql,
   path: fileURLToPath(new URL("migrations", import.meta.url)),
   before: ({ migration_id, name }) => {
-    // eslint-disable-next-line no-console
     console.log("Migrating", migration_id, name);
   },
 })
   .then(() => {
-    // eslint-disable-next-line no-console
     console.log("All good");
     process.exit(0);
   })
   .catch((err) => {
-    // eslint-disable-next-line no-console
     console.error("Failed", err);
     process.exit(1);
   });

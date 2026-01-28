@@ -18,18 +18,41 @@ export function validateEnv(
   const errors: string[] = [];
   const env: Record<string, unknown> = {};
 
-  for (const [key, value] of Object.entries(EnvironmentVariables)) {
-    if (!config[key]) {
+  for (const [key, defaultValue] of Object.entries(EnvironmentVariables)) {
+    const raw = config[key];
+    if (typeof raw === "undefined" || raw === null || raw === "") {
       errors.push(`Environment variable ${key}`);
-    } else {
-      switch (typeof value) {
-        case "string":
-          env[key] = String(value);
-          break;
-        case "number":
-          env[key] = Number(value);
-          break;
+      continue;
+    }
+
+    if (
+      typeof raw !== "string" &&
+      typeof raw !== "number" &&
+      typeof raw !== "boolean"
+    ) {
+      errors.push(`Environment variable ${key} must be a primitive`);
+      continue;
+    }
+
+    switch (typeof defaultValue) {
+      case "string":
+        if (typeof raw === "string") {
+          env[key] = raw;
+        } else {
+          env[key] = String(raw);
+        }
+        break;
+      case "number": {
+        const n = Number(raw);
+        if (Number.isNaN(n)) {
+          errors.push(`Environment variable ${key} must be a number`);
+        } else {
+          env[key] = n;
+        }
+        break;
       }
+      default:
+        env[key] = raw;
     }
   }
 

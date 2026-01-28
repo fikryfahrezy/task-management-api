@@ -50,5 +50,7 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install
-      - name: Run tests
+      - name: Run Unit Tests
         run: pnpm test:cov
+      - name: Run e2e Tests
+        run: pnpm test:e2e
