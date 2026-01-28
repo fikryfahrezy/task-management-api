@@ -19,7 +19,7 @@ services:
       - path: ./.env
         required: true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:${PORT}"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:${PORT}/docs"]
       interval: 5s
       timeout: 5s
       retries: 5

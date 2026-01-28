@@ -38,4 +38,8 @@ USER nestjs
 ENV PORT=8080
 EXPOSE ${PORT}
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/docs || exit 1
+
 CMD ["sh", "-c", "node ./migrate.mjs && node ./main.js"]
