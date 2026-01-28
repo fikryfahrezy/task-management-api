@@ -94,19 +94,21 @@ describe("Task Management API (e2e)", () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
-  it("/api/login (POST) should return token", () => {
-    return request(app.getHttpServer())
+  it("/api/login (POST) should return token", async () => {
+    await request(app.getHttpServer())
       .post("/api/login")
       .send({ email: "admin@example.com", password: "password123" })
       .expect(200)
       .expect({ token: authToken });
   });
 
-  it("/api/login (POST) should return invalid credentials", () => {
-    return request(app.getHttpServer())
+  it("/api/login (POST) should return invalid credentials", async () => {
+    await request(app.getHttpServer())
       .post("/api/login")
       .send({ email: "wrong@example.com", password: "invalid" })
       .expect(401)
@@ -117,8 +119,15 @@ describe("Task Management API (e2e)", () => {
       });
   });
 
-  it("/api/tasks (GET) should require auth", () => {
-    return request(app.getHttpServer()).get("/api/tasks").expect(401);
+  it("/api/tasks (GET) should require auth", async () => {
+    await request(app.getHttpServer()).get("/api/tasks").expect(401);
+  });
+
+  it("/api/tasks (GET) should reject invalid token", async () => {
+    await request(app.getHttpServer())
+      .get("/api/tasks")
+      .set("Authorization", "Bearer invalid-token")
+      .expect(401);
   });
 
   it("/api/tasks (POST) should create and list task", async () => {
@@ -143,5 +152,51 @@ describe("Task Management API (e2e)", () => {
     expect(Array.isArray((listResponse.body as { data: unknown[] }).data)).toBe(
       true,
     );
+  });
+
+  it("/api/tasks (CRUD) should get, update, and delete task", async () => {
+    const createResponse = await request(app.getHttpServer())
+      .post("/api/tasks")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+        title: `${testTitle}-crud`,
+        description: "CRUD task",
+        status: "pending",
+        user_id: userId,
+      })
+      .expect(201);
+
+    const createdId = (createResponse.body as { id: number }).id;
+
+    const getResponse = await request(app.getHttpServer())
+      .get(`/api/tasks/${createdId}`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(200);
+
+    expect((getResponse.body as { id: number }).id).toBe(createdId);
+
+    const updateResponse = await request(app.getHttpServer())
+      .put(`/api/tasks/${createdId}`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+        title: "Updated title",
+        description: "Updated description",
+        status: "done",
+      })
+      .expect(200);
+
+    expect((updateResponse.body as { title: string }).title).toBe(
+      "Updated title",
+    );
+
+    await request(app.getHttpServer())
+      .delete(`/api/tasks/${createdId}`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .get(`/api/tasks/${createdId}`)
+      .set("Authorization", `Bearer ${authToken}`)
+      .expect(404);
   });
 });
