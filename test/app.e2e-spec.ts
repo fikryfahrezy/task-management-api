@@ -4,7 +4,6 @@ import { Test, TestingModule } from "@nestjs/testing";
 import postgres from "postgres";
 import request from "supertest";
 import { App } from "supertest/types";
-import { AppModule } from "./../src/app.module";
 import { CatchEverythingFilter } from "./../src/filters/catch-everything-filter";
 import {
   PostgreSqlContainer,
@@ -35,13 +34,14 @@ describe("Task Management API (e2e)", () => {
     process.env.POSTGRES_USER = postgresContainer.getUsername();
     process.env.POSTGRES_PASSWORD = postgresContainer.getPassword();
     process.env.AUTH_TOKEN = authToken;
+    process.env.PORT = "3000";
 
     sql = postgres({
-      host: postgresContainer.getHost(),
-      port: postgresContainer.getPort(),
-      db: postgresContainer.getDatabase(),
-      user: postgresContainer.getUsername(),
-      password: postgresContainer.getPassword(),
+      host: process.env.POSTGRES_HOST,
+      port: Number(process.env.POSTGRES_PORT),
+      db: process.env.POSTGRES_DB,
+      user: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
     });
 
     const migrationsPath = path.join(__dirname, "..", "migrations");
@@ -75,8 +75,14 @@ describe("Task Management API (e2e)", () => {
   });
 
   beforeEach(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const { AppModule: ImportedAppModule } = await import(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore: allow runtime import of AppModule for e2e (ts-jest resolution)
+      "./../src/app.module"
+    );
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [ImportedAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
