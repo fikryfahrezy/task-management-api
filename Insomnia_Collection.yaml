@@ -1,0 +1,244 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: Task Management API
+meta:
+  id: wrk_d36c64e051b64fd7a27b54de33a69047
+  created: 1769570120147
+  modified: 1769570120147
+  description: ""
+collection:
+  - name: auth
+    meta:
+      id: fld_cee92a3f17be465e95c5ea22d3f84ab2
+      created: 1769574970366
+      modified: 1769574975820
+      sortKey: -1769574973664
+      description: ""
+    children:
+      - url: "{{ _.BASE_URL }}/api/login"
+        name: Login
+        meta:
+          id: req_ef9d4fb24b124e9cb4deec7ec6d7c298
+          created: 1769575034035
+          modified: 1769575980409
+          isPrivate: false
+          description: ""
+          sortKey: -1769575034035
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "email": "admin@example.com",
+              "password": "password123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.3.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: tasks
+    meta:
+      id: fld_c910b3125dc94527926f9c925af229ce
+      created: 1769574973564
+      modified: 1769576072174
+      sortKey: -1769574973564
+      description: ""
+    children:
+      - url: "{{ _.BASE_URL }}/api/tasks"
+        name: Create Task
+        meta:
+          id: req_b8550457699d4ee696863a1ea83072db
+          created: 1769575138126
+          modified: 1769575638444
+          isPrivate: false
+          description: ""
+          sortKey: -1769575139127
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "title": "Write API docs",
+              "description": "Document task management API",
+              "status": "pending",
+              "user_id": 1
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.3.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.BASE_URL }}/api/tasks"
+        name: Get List Task
+        meta:
+          id: req_209769d46ffb4798a5c11089c74bf392
+          created: 1769575163412
+          modified: 1769576356588
+          isPrivate: false
+          description: ""
+          sortKey: -1769575139227
+        method: GET
+        parameters:
+          - name: page
+            value: "1"
+            description: ""
+            disabled: false
+          - name: limit
+            value: "10"
+            description: ""
+            disabled: false
+        headers:
+          - name: User-Agent
+            value: insomnia/12.3.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.BASE_URL }}/api/tasks/:id"
+        name: Get Detail Task
+        meta:
+          id: req_ee1031ad34334d35a88be04c85258c94
+          created: 1769575200641
+          modified: 1769576444122
+          isPrivate: false
+          description: ""
+          sortKey: -1769575139177
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.3.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: id
+            value: "1"
+      - url: "{{ _.BASE_URL }}/api/tasks/:id"
+        name: Update Task
+        meta:
+          id: req_5357a528e9074e8f9c56cb6cd204b08f
+          created: 1769575223097
+          modified: 1769576461360
+          isPrivate: false
+          description: ""
+          sortKey: -1769575122706.375
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"title": "Write API docs",
+            	"description": "Document task management API",
+            	"status": "done",
+              "user_id": 1
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.3.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: id
+            value: "8"
+      - url: "{{ _.BASE_URL }}/api/tasks/:id"
+        name: Delete Task
+        meta:
+          id: req_22cc77b0517247c597e38d359502905d
+          created: 1769575252798
+          modified: 1769576506668
+          isPrivate: false
+          description: ""
+          sortKey: -1769575119422.25
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.3.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: id
+            value: "8"
+    authentication:
+      type: bearer
+      disabled: false
+      token: "{{ _.BEARER_TOKEN }}"
+      prefix: Bearer
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_0b558e225f34f26f1f7d02b894150badc0ca8f8e
+    created: 1769570120162
+    modified: 1769570120162
+environments:
+  name: Local Environment
+  meta:
+    id: env_0b558e225f34f26f1f7d02b894150badc0ca8f8e
+    created: 1769570120160
+    modified: 1769575489826
+    isPrivate: false
+  data:
+    BASE_URL: http://localhost:3000
+    BEARER_TOKEN: secret-token-123
+  subEnvironments:
+    - name: Production Environment
+      meta:
+        id: env_d659b09cd49f460f8bcb0a9b861f8c51
+        created: 1769574994368
+        modified: 1769575492388
+        isPrivate: false
+        sortKey: 1769574994368
+      data:
+        BASE_URL: https://task.fahrezy.work
+        BEARER_TOKEN: secret-token-123
