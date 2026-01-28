@@ -23,7 +23,7 @@ describe("AuthService", () => {
     };
 
     const result = authService.login(dto);
-    expect(result.token).toBe("secret-token-123");
+    expect(result.data.token).toBe("secret-token-123");
   });
 
   it("should throw on invalid credentials", () => {

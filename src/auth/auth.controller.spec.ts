@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
-import { LoginReqDto, LoginResDto } from "./dto/login.dto";
+import { LoginReqDto, LoginResDto, LoginTokenDto } from "./dto/login.dto";
 
 describe("AuthController", () => {
   let controller: AuthController;
@@ -30,7 +30,10 @@ describe("AuthController", () => {
       password: "password123",
     };
 
-    const response = new LoginResDto({ token: "secret-token-123" });
+    const response = new LoginResDto({
+      message: "Login successful",
+      data: new LoginTokenDto({ token: "secret-token-123" }),
+    });
     jest.spyOn(authService, "login").mockReturnValue(response);
 
     expect(controller.login(dto)).toEqual(response);

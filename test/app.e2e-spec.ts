@@ -11,6 +11,7 @@ import {
 } from "@testcontainers/postgresql";
 import fs from "fs/promises";
 import path from "path";
+import { TaskListResDto, TaskResDto } from "src/tasks/dto/list-tasks.dto";
 
 describe("Task Management API (e2e)", () => {
   jest.setTimeout(60000);
@@ -110,7 +111,12 @@ describe("Task Management API (e2e)", () => {
       .post("/api/login")
       .send({ email: "admin@example.com", password: "password123" })
       .expect(200)
-      .expect({ token: authToken });
+      .expect({
+        message: "Login successful",
+        data: {
+          token: authToken,
+        },
+      });
   });
 
   it("/api/login (POST) should return invalid credentials", async () => {
@@ -148,14 +154,14 @@ describe("Task Management API (e2e)", () => {
       })
       .expect(201);
 
-    expect((createResponse.body as { title: string }).title).toBe(testTitle);
+    expect((createResponse.body as TaskResDto).data.title).toBe(testTitle);
 
     const listResponse = await request(app.getHttpServer())
       .get("/api/tasks?page=1&limit=5")
       .set("Authorization", `Bearer ${authToken}`)
       .expect(200);
 
-    expect(Array.isArray((listResponse.body as { data: unknown[] }).data)).toBe(
+    expect(Array.isArray((listResponse.body as TaskListResDto).data)).toBe(
       true,
     );
   });
@@ -172,14 +178,14 @@ describe("Task Management API (e2e)", () => {
       })
       .expect(201);
 
-    const createdId = (createResponse.body as { id: number }).id;
+    const createdId = (createResponse.body as TaskResDto).data.id;
 
     const getResponse = await request(app.getHttpServer())
       .get(`/api/tasks/${createdId}`)
       .set("Authorization", `Bearer ${authToken}`)
       .expect(200);
 
-    expect((getResponse.body as { id: number }).id).toBe(createdId);
+    expect((getResponse.body as TaskResDto).data.id).toBe(createdId);
 
     const updateResponse = await request(app.getHttpServer())
       .put(`/api/tasks/${createdId}`)
@@ -191,7 +197,7 @@ describe("Task Management API (e2e)", () => {
       })
       .expect(200);
 
-    expect((updateResponse.body as { title: string }).title).toBe(
+    expect((updateResponse.body as TaskResDto).data.title).toBe(
       "Updated title",
     );
 

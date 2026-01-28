@@ -12,11 +12,24 @@ export class LoginReqDto {
   password: string;
 }
 
-export class LoginResDto {
+export class LoginTokenDto {
   @ApiProperty({ example: "abc123xyz" })
   token: string;
 
-  constructor(obj: LoginResDto) {
+  constructor(obj: LoginTokenDto) {
     this.token = obj.token;
+  }
+}
+
+export class LoginResDto {
+  @ApiProperty({ example: "Login successful" })
+  message: string;
+
+  @ApiProperty({ type: LoginTokenDto })
+  data: LoginTokenDto;
+
+  constructor(obj: LoginResDto) {
+    this.message = obj.message;
+    this.data = obj.data;
   }
 }

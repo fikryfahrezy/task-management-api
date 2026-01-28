@@ -3,10 +3,10 @@ import { TasksController } from "./tasks.controller";
 import { TasksService } from "./tasks.service";
 import { CreateTaskDto } from "./dto/create-task.dto";
 import { UpdateTaskDto } from "./dto/update-task.dto";
-import { TaskListResDto, TaskResDto } from "./dto/list-tasks.dto";
+import { TaskListResDto, TaskDto, TaskResDto } from "./dto/list-tasks.dto";
 import { TokenGuard } from "../guards/token.guard";
 
-const baseTask = new TaskResDto({
+const baseTask = new TaskDto({
   id: 1,
   title: "Task 1",
   description: "Description",
@@ -44,6 +44,7 @@ describe("TasksController", () => {
 
   it("should list tasks with default page/limit", async () => {
     const response = new TaskListResDto({
+      message: "Tasks retrieved successfully",
       data: [baseTask],
       meta: { page: 1, limit: 10, total: 1 },
     });
@@ -59,11 +60,14 @@ describe("TasksController", () => {
   });
 
   it("should get task", async () => {
-    jest.spyOn(service, "getTask").mockResolvedValue(baseTask);
+    const expected = new TaskResDto({
+      message: "Task retrieved successfully",
+      data: baseTask,
+    });
+    jest.spyOn(service, "getTask").mockResolvedValue(expected);
 
     const result = await controller.getTask(1);
-
-    expect(result).toEqual(baseTask);
+    expect(result).toEqual(expected);
   });
 
   it("should create task", async () => {
@@ -74,27 +78,36 @@ describe("TasksController", () => {
       user_id: 1,
     };
 
-    jest.spyOn(service, "createTask").mockResolvedValue(baseTask);
+    const expected = new TaskResDto({
+      message: "Task created successfully",
+      data: baseTask,
+    });
+    jest.spyOn(service, "createTask").mockResolvedValue(expected);
 
     const result = await controller.createTask(dto);
-
-    expect(result).toEqual(baseTask);
+    expect(result).toEqual(expected);
   });
 
   it("should update task", async () => {
     const dto: UpdateTaskDto = { title: "Updated" };
-    jest.spyOn(service, "updateTask").mockResolvedValue(baseTask);
+    const expected = new TaskResDto({
+      message: "Task updated successfully",
+      data: baseTask,
+    });
+    jest.spyOn(service, "updateTask").mockResolvedValue(expected);
 
     const result = await controller.updateTask(1, dto);
-
-    expect(result).toEqual(baseTask);
+    expect(result).toEqual(expected);
   });
 
   it("should delete task", async () => {
-    jest.spyOn(service, "deleteTask").mockResolvedValue(baseTask);
+    const expected = new TaskResDto({
+      message: "Task deleted successfully",
+      data: baseTask,
+    });
+    jest.spyOn(service, "deleteTask").mockResolvedValue(expected);
 
     const result = await controller.deleteTask(1);
-
-    expect(result).toEqual(baseTask);
+    expect(result).toEqual(expected);
   });
 });

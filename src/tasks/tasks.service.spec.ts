@@ -1,7 +1,7 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { TasksService } from "./tasks.service";
 import { TasksRepository } from "./tasks.repository";
-import { TaskResDto, TaskListResDto } from "./dto/list-tasks.dto";
+import { TaskResDto, TaskListResDto, TaskDto } from "./dto/list-tasks.dto";
 import { CreateTaskDto } from "./dto/create-task.dto";
 import { UpdateTaskDto } from "./dto/update-task.dto";
 
@@ -37,7 +37,7 @@ describe("TasksService", () => {
     const result = await tasksService.listTasks(1, 10);
 
     expect(result).toBeInstanceOf(TaskListResDto);
-    expect(result.data[0]).toBeInstanceOf(TaskResDto);
+    expect(result.data[0]).toBeInstanceOf(TaskDto);
     expect(result.meta.total).toBe(1);
   });
 
@@ -47,7 +47,7 @@ describe("TasksService", () => {
     const result = await tasksService.getTask(1);
 
     expect(result).toBeInstanceOf(TaskResDto);
-    expect(result.id).toBe(1);
+    expect(result.data.id).toBe(1);
   });
 
   it("should throw when task not found", async () => {
@@ -75,7 +75,7 @@ describe("TasksService", () => {
     const result = await tasksService.createTask(dto);
 
     expect(result).toBeInstanceOf(TaskResDto);
-    expect(result.title).toBe("Create");
+    expect(result.data.title).toBe("Create");
   });
 
   it("should update task", async () => {
@@ -92,7 +92,7 @@ describe("TasksService", () => {
     const result = await tasksService.updateTask(1, dto);
 
     expect(result).toBeInstanceOf(TaskResDto);
-    expect(result.title).toBe("Updated");
+    expect(result.data.title).toBe("Updated");
   });
 
   it("should throw when update payload is empty", async () => {

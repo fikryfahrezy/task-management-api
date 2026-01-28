@@ -7,7 +7,7 @@ import { CreateTaskDto } from "./dto/create-task.dto";
 import { UpdateTaskDto } from "./dto/update-task.dto";
 import { TasksRepository } from "./tasks.repository";
 import { TaskStatus } from "./task.types";
-import { TaskListResDto, TaskResDto } from "./dto/list-tasks.dto";
+import { TaskDto, TaskListResDto, TaskResDto } from "./dto/list-tasks.dto";
 
 @Injectable()
 export class TasksService {
@@ -17,8 +17,9 @@ export class TasksService {
     const offset = (page - 1) * limit;
     const [tasks, total] = await this.tasksRepository.listTasks(limit, offset);
 
-    const taskDtos = tasks.map((task) => new TaskResDto(task));
+    const taskDtos = tasks.map((task) => new TaskDto(task));
     return new TaskListResDto({
+      message: "Tasks retrieved successfully",
       data: taskDtos,
       meta: { page, limit, total },
     });
@@ -30,7 +31,10 @@ export class TasksService {
       throw new NotFoundException("Task not found");
     }
 
-    return new TaskResDto(task);
+    return new TaskResDto({
+      message: "Task retrieved successfully",
+      data: new TaskDto(task),
+    });
   }
 
   async createTask(createDto: CreateTaskDto): Promise<TaskResDto> {
@@ -41,7 +45,10 @@ export class TasksService {
       status: status,
     });
 
-    return new TaskResDto(createdTask);
+    return new TaskResDto({
+      message: "Task created successfully",
+      data: new TaskDto(createdTask),
+    });
   }
 
   async updateTask(id: number, updateDto: UpdateTaskDto): Promise<TaskResDto> {
@@ -61,7 +68,10 @@ export class TasksService {
       status: status,
     });
 
-    return new TaskResDto(updatedTask);
+    return new TaskResDto({
+      message: "Task updated successfully",
+      data: new TaskDto(updatedTask),
+    });
   }
 
   async deleteTask(id: number): Promise<TaskResDto> {
@@ -72,6 +82,9 @@ export class TasksService {
 
     await this.tasksRepository.softDeleteTask(id);
 
-    return new TaskResDto(existing);
+    return new TaskResDto({
+      message: "Task deleted successfully",
+      data: new TaskDto(existing),
+    });
   }
 }

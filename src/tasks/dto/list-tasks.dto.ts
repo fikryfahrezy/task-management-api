@@ -20,7 +20,7 @@ export class ListTasksQueryDto {
   limit?: number;
 }
 
-export class TaskResDto {
+export class TaskDto {
   @ApiProperty({ example: 1 })
   id: number;
 
@@ -39,12 +39,25 @@ export class TaskResDto {
   @ApiProperty({ example: 1 })
   user_id: number;
 
-  constructor(obj: TaskResDto) {
+  constructor(obj: TaskDto) {
     this.id = obj.id;
     this.title = obj.title;
     this.description = obj.description;
     this.status = obj.status;
     this.user_id = obj.user_id;
+  }
+}
+
+export class TaskResDto {
+  @ApiProperty({ example: "Task retrieved successfully" })
+  message: string;
+
+  @ApiProperty({ type: TaskDto })
+  data: TaskDto;
+
+  constructor(obj: TaskResDto) {
+    this.message = obj.message;
+    this.data = obj.data;
   }
 }
 
@@ -60,8 +73,11 @@ export class TaskListMetaResDto {
 }
 
 export class TaskListResDto {
-  @ApiProperty({ type: [TaskResDto] })
-  data: TaskResDto[];
+  @ApiProperty({ example: "Tasks retrieved successfully" })
+  message: string;
+
+  @ApiProperty({ type: [TaskDto] })
+  data: TaskDto[];
 
   @ApiProperty({ type: TaskListMetaResDto })
   meta: TaskListMetaResDto;

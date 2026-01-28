@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "../config/config.service";
-import { LoginReqDto, LoginResDto } from "./dto/login.dto";
+import { LoginReqDto, LoginResDto, LoginTokenDto } from "./dto/login.dto";
 
 const HARD_CODED_EMAIL = "admin@example.com";
 const HARD_CODED_PASSWORD = "password123";
@@ -21,6 +21,11 @@ export class AuthService {
     if (!this.validate(loginReqDto.email, loginReqDto.password)) {
       throw new UnauthorizedException("Invalid credentials");
     }
-    return new LoginResDto({ token: this.getToken() });
+    return new LoginResDto({
+      message: "Login successful",
+      data: new LoginTokenDto({
+        token: this.getToken(),
+      }),
+    });
   }
 }
