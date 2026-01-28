@@ -16,7 +16,7 @@ export class TasksRepository {
     `;
 
     const tasks = result.map(({ total: _, ...task }) => task);
-    const total = result[0]?.total ?? 0;
+    const total = Number(result[0]?.total ?? 0);
 
     return [tasks, total];
   }
@@ -41,16 +41,26 @@ export class TasksRepository {
   }
 
   async updateTask(id: number, task: Omit<Partial<Task>, "id">): Promise<Task> {
+    const tasks = [task].map((task) => {
+      return [
+        task.title ?? null,
+        task.description ?? null,
+        task.status ?? null,
+        task.user_id ?? null,
+      ] as const;
+    });
+
     const [updated] = await this.databaseService.sql<Task[]>`
-    UPDATE tasks SET
-      title = COALESCE(update_data.title, title),
-      description = COALESCE(update_data.description, description),
-      status = COALESCE(update_data.status, status),
-      user_id = COALESCE(update_data.user_id, user_id),
+    UPDATE tasks AS t SET
+      title = COALESCE(update_data.title, t.title),
+      description = COALESCE(update_data.description, t.description),
+      status = COALESCE(update_data.status, t.status),
+      user_id = COALESCE(update_data.user_id::int, t.user_id),
       updated_at = NOW()
-    FROM (VALUES ${this.databaseService.sql(task)}) AS update_data (title, description, status, user_id)
-    WHERE id = ${id}
-    RETURNING id, title, description, status, user_id
+    FROM (VALUES ${this.databaseService.sql(tasks)})
+      AS update_data (title, description, status, user_id)
+    WHERE t.id = ${id}
+    RETURNING t.id, t.title, t.description, t.status, t.user_id
     `;
 
     return updated;
