@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    strategy:
+      matrix:
+        node: [">=22"]
+        os: [ubuntu-24.04]
+    name: lint
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0+sha512.05df71d1421f21399e053fde567cea34d446fa02c76571441bfc1c7956e98e363088982d940465fd34480d4d90a0668bc12362f8aa88000a64e83d0b0e47be48
+          run_install: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run lint
+        run: pnpm lint
+  test:
+    needs: lint
+    strategy:
+      matrix:
+        node: [">=22"]
+        os: [ubuntu-24.04]
+    name: test
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0+sha512.05df71d1421f21399e053fde567cea34d446fa02c76571441bfc1c7956e98e363088982d940465fd34480d4d90a0668bc12362f8aa88000a64e83d0b0e47be48
+          run_install: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run tests
+        run: pnpm test:cov
