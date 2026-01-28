@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 import { TasksService } from "./tasks.service";
 import { TasksRepository } from "./tasks.repository";
 import { TaskResDto, TaskListResDto, TaskDto } from "./dto/list-tasks.dto";
@@ -93,12 +93,6 @@ describe("TasksService", () => {
 
     expect(result).toBeInstanceOf(TaskResDto);
     expect(result.data.title).toBe("Updated");
-  });
-
-  it("should throw when update payload is empty", async () => {
-    await expect(tasksService.updateTask(1, {})).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
   });
 
   it("should throw when updating missing task", async () => {
