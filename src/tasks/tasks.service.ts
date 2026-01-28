@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { CreateTaskDto } from "./dto/create-task.dto";
 import { UpdateTaskDto } from "./dto/update-task.dto";
 import { TasksRepository } from "./tasks.repository";
@@ -52,10 +48,6 @@ export class TasksService {
   }
 
   async updateTask(id: number, updateDto: UpdateTaskDto): Promise<TaskResDto> {
-    if (Object.keys(updateDto).length === 0) {
-      throw new BadRequestException("No fields to update");
-    }
-
     const existing = await this.tasksRepository.getTaskById(id);
     if (!existing) {
       throw new NotFoundException("Task not found");

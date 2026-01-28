@@ -83,6 +83,7 @@ export class TaskListResDto {
   meta: TaskListMetaResDto;
 
   constructor(obj: TaskListResDto) {
+    this.message = obj.message;
     this.data = obj.data;
     this.meta = obj.meta;
   }
