@@ -1,9 +1,7 @@
 const net = require("net");
 
-const url = new URL(process.env.DATABASE_URL);
-
-const host = url.hostname;
-const port = url.port || 5432;
+const host = process.env.POSTGRES_HOST;
+const port = process.env.POSTGRES_PORT || 5432;
 
 function tryConnect() {
   const socket = net.connect(port, host);
