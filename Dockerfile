@@ -31,6 +31,7 @@ RUN adduser --system --uid 1001 nestjs
 
 COPY --from=installer --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/migrations ./migrations
+COPY --from=builder --chown=nestjs:nodejs /app/scripts ./scripts
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./
 
 USER nestjs
@@ -42,4 +43,4 @@ EXPOSE ${PORT}
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT}/docs || exit 1
 
-CMD ["sh", "-c", "node ./migrate.mjs && node ./main.js"]
+CMD ["sh", "-c", "node ./scripts/wait-db.cjs && node ./migrate.mjs && node ./main.js"]
